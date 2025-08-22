@@ -17,8 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Configurações do Mercado Pago
-$MP_ACCESS_TOKEN = 'APP_USR-3811061902338910-082020-0bf36771f9515a8eb63d82fd07e51593-2523204749';
+// Configurações da LightPay
+$CLIENT_ID = 'client_68a8c1ecc5c22';
+$SECRET_KEY = '80651cbb5bcbac38e512517a466fa222';
+$LIGHTPAY_ENDPOINT = 'https://lightpaybr.com/v2/';
 
 try {
     // Get JSON input
@@ -51,42 +53,47 @@ try {
         exit();
     }
     
-    // Clean CPF (remove non-numeric characters)
+    // Clean CPF and phone (remove non-numeric characters)
     $cpf_clean = preg_replace('/\D/', '', $cpf);
+    $phone_clean = preg_replace('/\D/', '', $phone);
     
-    // Split name into first and last name
-    $name_parts = explode(' ', trim($name));
-    $first_name = $name_parts[0];
-    $last_name = count($name_parts) > 1 ? implode(' ', array_slice($name_parts, 1)) : $first_name;
+    // Ensure phone has at least 10 digits
+    if (strlen($phone_clean) < 10) {
+        $phone_clean = '11999999999'; // Default phone if not provided or invalid
+    }
     
-    // Prepare payment data for Mercado Pago
+    // Convert amount to centavos (LightPay expects integer in centavos)
+    $amount_centavos = (int)($amount * 100);
+    
+    // Prepare payment data for LightPay
     $payment_data = [
-        'transaction_amount' => (float)$amount,
-        'description' => $description,
-        'payment_method_id' => 'pix',
-        'payer' => [
-            'email' => $email,
-            'first_name' => $first_name,
-            'last_name' => $last_name,
-            'identification' => [
-                'type' => 'CPF',
-                'number' => $cpf_clean
-            ]
-        ]
+        'nome' => $name,
+        'cpf' => $cpf_clean,
+        'celular' => $phone_clean,
+        'email' => $email,
+        'valor' => $amount_centavos,
+        'rua' => 'Rua da Doação',
+        'numero' => '123',
+        'cep' => '01310100',
+        'bairro' => 'Centro',
+        'cidade' => 'São Paulo',
+        'estado' => 'SP'
     ];
     
-    error_log('Criando pagamento PIX: ' . json_encode($payment_data));
+    error_log('Criando pagamento PIX LightPay: ' . json_encode($payment_data));
     
-    // Make request to Mercado Pago API
+    // Create Basic Auth header
+    $auth_string = base64_encode($CLIENT_ID . ':' . $SECRET_KEY);
+    
+    // Make request to LightPay API
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://api.mercadopago.com/v1/payments');
+    curl_setopt($ch, CURLOPT_URL, $LIGHTPAY_ENDPOINT);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payment_data));
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $MP_ACCESS_TOKEN,
-        'Content-Type: application/json',
-        'X-Idempotency-Key: ' . time() . '-' . rand(1000, 9999)
+        'Authorization: Basic ' . $auth_string,
+        'Content-Type: application/json'
     ]);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
@@ -99,30 +106,38 @@ try {
     if ($curl_error) {
         error_log('Erro cURL: ' . $curl_error);
         http_response_code(500);
-        echo json_encode(['error' => 'Erro de conexão com Mercado Pago']);
+        echo json_encode(['error' => 'Erro de conexão com LightPay']);
         exit();
     }
     
-    $mp_response = json_decode($response, true);
-    error_log('Resposta do Mercado Pago: ' . $response);
+    $lightpay_response = json_decode($response, true);
+    error_log('Resposta da LightPay: ' . $response);
     
-    if ($http_code !== 201) {
-        error_log('Erro do Mercado Pago: ' . $response);
+    if ($http_code !== 200) {
+        error_log('Erro da LightPay: ' . $response);
         http_response_code(400);
         echo json_encode([
             'error' => 'Erro ao criar pagamento',
-            'details' => $mp_response['message'] ?? 'Erro desconhecido'
+            'details' => $lightpay_response['message'] ?? 'Erro desconhecido'
         ]);
         exit();
     }
     
-    // Return payment data
+    // Check if response has required fields
+    if (!isset($lightpay_response['transactionId']) || !isset($lightpay_response['pix'])) {
+        error_log('Resposta inválida da LightPay: ' . $response);
+        http_response_code(500);
+        echo json_encode(['error' => 'Resposta inválida da API']);
+        exit();
+    }
+    
+    // Return payment data in the expected format
     $result = [
-        'transaction_id' => (string)$mp_response['id'],
-        'status' => $mp_response['status'],
-        'qr_code' => $mp_response['point_of_interaction']['transaction_data']['qr_code'] ?? null,
-        'qr_code_base64' => $mp_response['point_of_interaction']['transaction_data']['qr_code_base64'] ?? null,
-        'amount' => $mp_response['transaction_amount'],
+        'transaction_id' => $lightpay_response['transactionId'],
+        'status' => 'pending',
+        'qr_code' => $lightpay_response['pix'],
+        'qr_code_base64' => null, // LightPay doesn't provide base64, only the PIX code
+        'amount' => $amount,
         'currency' => 'BRL'
     ];
     
