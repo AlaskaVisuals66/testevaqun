@@ -1,0 +1,9 @@
+
+{
+  "name": "sistema-doacoes-juvilda",
+  "version": "1.0.0",
+  "description": "Sistema de doações com Mercado Pago - PHP",
+  "main": "index.html",
+  "scripts": {},
+  "dependencies": {}
+}

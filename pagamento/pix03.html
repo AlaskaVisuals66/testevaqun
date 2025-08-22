@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento PIX - Doação para Juvilda</title>
+    <link rel="icon" href="images/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Biblioteca QRCode.js para gerar QR codes -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '1262720525545955');
+      fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1262720525545955&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .pix-payment-page {
+            background-color: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .pix-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .vakinha-logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .vakinha-logo img {
+            height: 40px;
+        }
+        
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            color: #4CAF50;
+            font-size: 14px;
+            background-color: #f0f9f0;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        .secure-badge i {
+            margin-right: 5px;
+        }
+        
+        .quase-la {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        
+        .pix-message {
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #0066cc;
+            border: 1px solid #d1e9ff;
+        }
+        
+        .pix-message p {
+            margin: 0;
+        }
+        
+        .pix-value {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #333;
+        }
+        
+        .qr-code-container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+        }
+        
+        #qrcode {
+            width: 200px;
+            height: 200px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
+        #qrcode img, 
+        #qrcode canvas {
+            width: 100%;
+            height: 100%;
+            max-width: 180px;
+            max-height: 180px;
+            object-fit: contain;
+        }
+        
+        .pix-code-container {
+            margin-bottom: 16px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .pix-code {
+            width: 100%;
+            max-width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+            color: #333;
+            resize: none;
+            height: 80px;
+            padding-right: 100px;
+            text-align: center;
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+        
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #00a859;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-button:hover {
+            background-color: #008a4b;
+        }
+        
+        .copy-button-large {
+            width: 100%;
+            background-color: #00a859;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-button-large:hover {
+            background-color: #008a4b;
+        }
+
+        .copy-button-large i {
+            margin-right: 8px;
+        }
+
+        .download-qrcode-button {
+            width: 100%;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .download-qrcode-button:hover {
+            background-color: #0055aa;
+        }
+
+        .download-qrcode-button i {
+            margin-right: 8px;
+        }
+        
+        .timer {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff3b30;
+            margin-bottom: 24px;
+        }
+        
+        .timer-warning {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .pix-steps {
+            margin-bottom: 24px;
+        }
+        
+        .pix-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .step-icon {
+            margin-right: 12px;
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background-color: #f0f9f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4CAF50;
+        }
+        
+        .step-text {
+            font-size: 14px;
+            color: #555;
+            flex: 1;
+        }
+        
+        .payment-status {
+            background-color: #e8f5e9;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .success-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+        
+        .success-content h3 {
+            margin: 0 0 8px 0;
+            color: #4CAF50;
+        }
+        
+        .success-content p {
+            margin: 0;
+            color: #555;
+        }
+        
+        .back-button {
+            width: 100%;
+            background-color: #f5f5f5;
+            color: #555;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .back-button:hover {
+            background-color: #e5e5e5;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .section-title h1 {
+            font-size: 24px;
+            color: #333;
+            margin: 0;
+        }
+        
+        /* Estilos para o spinner */
+        .spinner-small {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .pix-payment-page {
+                padding: 16px;
+            }
+            
+            .pix-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .quase-la {
+                font-size: 20px;
+            }
+            
+            #qrcode {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .timer {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="pix-payment-page">
+            <div class="pix-header">
+                <div class="vakinha-logo">
+                    <img src="../files/logo.svg" alt="Logo">
+                </div>
+                <div class="secure-badge">
+                    <i class="fas fa-lock"></i> Ambiente seguro
+                </div>
+            </div>
+            
+            <h2 class="quase-la">Doação 100% Segura!</h2>
+            
+            <div class="pix-message">
+                <p>Sua ajuda significa o mundo para a Jô! Obrigado por fazer parte dessa corrente do bem. ❤️</p>
+            </div>
+            
+            <div class="pix-value" id="headerValue">
+                Valor do Pix: R$ 0,00
+            </div>
+            
+            <div class="qr-code-container" id="qrSection">
+                <div id="qrcode"></div>
+            </div>
+            
+            <div class="pix-code-container">
+                <textarea class="pix-code" readonly id="pix-code-input"></textarea>
+            </div>
+            
+            <button class="copy-button-large" id="copy-button-large">
+                <i class="fas fa-copy"></i> COPIAR CÓDIGO PIX
+            </button>
+            
+            <div class="timer" id="payment-timer">
+                Expira em <span id="timer-display">15:00</span>
+            </div>
+            
+            <div class="pix-steps" id="howTo" style="display: none;">
+                <div class="pix-step">
+                    <div class="step-icon">
+                        <i class="fas fa-copy"></i>
+                    </div>
+                    <div class="step-text">Copie o código PIX acima</div>
+                </div>
+                <div class="pix-step">
+                    <div class="step-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="step-text">Abra seu aplicativo bancário e selecione a opção PIX Copia e Cola</div>
+                </div>
+                <div class="pix-step">
+                    <div class="step-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="step-text">Cole o código e conclua o pagamento</div>
+                </div>
+            </div>
+            
+            <div id="payment-status" class="payment-status" style="display: none;">
+                <div class="success-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="success-content">
+                    <h3>Pagamento Aprovado!</h3>
+                    <p>Agradecemos sua contribuição. Você será redirecionado em alguns segundos...</p>
+                </div>
+            </div>
+
+            <div id="loading-message" style="text-align: center; margin: 20px 0; color: #24ca68; font-weight: 600;">
+                <strong>Gerando QR Code…</strong>
+            </div>
+            
+            <button class="back-button" onclick="window.location.href='./index.html'">
+                ← Voltar para doação
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // === CONFIGURAÇÕES ===
+            const API_BASE = 'https://project.byrees.com';
+            const hash = localStorage.getItem('transaction_hash');
+            const pixValue = (parseInt(localStorage.getItem('pixValue'), 10) / 100).toFixed(2);
+
+            const timerEl = document.getElementById('timer-display');
+            const loadingMsg = document.getElementById('loading-message');
+            const qrSection = document.getElementById('qrSection');
+            const qrcode = document.getElementById('qrcode');
+            const pixCodeEl = document.getElementById('pix-code-input');
+            const copyBtn = document.getElementById('copy-button-large');
+            const howTo = document.getElementById('howTo');
+            const headerVal = document.getElementById('headerValue');
+
+            if (!hash) {
+                loadingMsg.textContent = 'Erro: transação inválida.';
+                return;
+            }
+
+            headerVal.textContent = `Valor do Pix: R$ ${pixValue}`;
+            try { 
+                if (window.fbq) fbq('track', 'InitiateCheckout', {value: pixValue, currency: 'BRL'}); 
+            } catch(e) {}
+
+            // Mantém o poll aberto para só limpar no fim do timer
+            let poll;
+
+            // Timer: exibe 15:00, depois conta até 00:00
+            let remaining = 15 * 60;
+            timerEl.textContent = '15:00';
+            const timerId = setInterval(() => {
+                remaining--;
+                if (remaining < 0) {
+                    clearInterval(timerId);
+                    clearInterval(poll);
+                    if (copyBtn) copyBtn.setAttribute('disabled', '');
+                    loadingMsg.textContent = 'Tempo esgotado.';
+                    return;
+                }
+                const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+                const s = String(remaining % 60).padStart(2, '0');
+                timerEl.textContent = `${m}:${s}`;
+            }, 1000);
+
+            // Polling para buscar dados do PIX
+            poll = setInterval(async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/api/verificar_status.php?hash=${encodeURIComponent(hash)}`);
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    
+                    if (data.pix && data.pix.pix_qr_code) {
+                        clearInterval(poll);
+                        
+                        // Gerar QR Code
+                        generateQRCode(data.pix.pix_qr_code);
+                        
+                        // Preencher código PIX
+                        pixCodeEl.value = data.pix.pix_qr_code;
+                        
+                        // Mostrar elementos
+                        loadingMsg.style.display = 'none';
+                        qrSection.style.display = 'block';
+                        copyBtn.style.display = 'flex';
+                        howTo.style.display = 'block';
+                        
+                        // Dispara pixel Purchase
+                        try { 
+                            if (window.fbq) fbq('track', 'Purchase', {value: pixValue, currency: 'BRL'}); 
+                        } catch(e) {}
+                    }
+                } catch(e) {
+                    console.error('Erro no polling PIX', e);
+                }
+            }, 2000);
+
+            // Função para gerar QR Code
+            function generateQRCode(pixCode) {
+                if (!pixCode || !qrcode) return;
+                
+                qrcode.innerHTML = '';
+                
+                try {
+                    QRCode.toDataURL(pixCode, {
+                        width: 200,
+                        height: 200,
+                        margin: 1,
+                        color: {
+                            dark: '#000000',
+                            light: '#ffffff'
+                        },
+                        errorCorrectionLevel: 'H'
+                    }, function(error, url) {
+                        if (error) {
+                            console.error('Erro ao gerar QR code:', error);
+                            generateQRCodeAlternative(pixCode);
+                            return;
+                        }
+                        
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = 'QR Code PIX';
+                        img.style.width = '180px';
+                        img.style.height = '180px';
+                        img.style.display = 'block';
+                        img.style.margin = '0 auto';
+                        qrcode.appendChild(img);
+                    });
+                } catch (err) {
+                    console.error('Exceção ao gerar QR code:', err);
+                    generateQRCodeAlternative(pixCode);
+                }
+            }
+
+            // Função alternativa para gerar QR Code
+            function generateQRCodeAlternative(pixCode) {
+                try {
+                    const qr = new QRCode(qrcode, {
+                        text: pixCode,
+                        width: 180,
+                        height: 180,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                    
+                    // Centralizar o QR code gerado pela biblioteca alternativa
+                    setTimeout(() => {
+                        const qrImg = qrcode.querySelector('img');
+                        const qrCanvas = qrcode.querySelector('canvas');
+                        if (qrImg) {
+                            qrImg.style.display = 'block';
+                            qrImg.style.margin = '0 auto';
+                        }
+                        if (qrCanvas) {
+                            qrCanvas.style.display = 'block';
+                            qrCanvas.style.margin = '0 auto';
+                        }
+                    }, 100);
+                } catch (err) {
+                    console.error('Falha no método alternativo:', err);
+                    
+                    // Último recurso - Google Charts API
+                    const img = document.createElement('img');
+                    img.src = 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + encodeURIComponent(pixCode) + '&choe=UTF-8';
+                    img.alt = 'QR Code PIX';
+                    img.style.width = '180px';
+                    img.style.height = '180px';
+                    img.style.display = 'block';
+                    img.style.margin = '0 auto';
+                    qrcode.innerHTML = '';
+                    qrcode.appendChild(img);
+                }
+            }
+
+            // Função para copiar código PIX
+            function copyPixCode() {
+                pixCodeEl.select();
+                
+                try {
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(pixCodeEl.value)
+                            .then(() => showCopySuccess())
+                            .catch(() => {
+                                document.execCommand('copy');
+                                showCopySuccess();
+                            });
+                    } else {
+                        document.execCommand('copy');
+                        showCopySuccess();
+                    }
+                } catch (err) {
+                    console.error("Erro ao copiar:", err);
+                    alert("Não foi possível copiar automaticamente. Por favor, copie manualmente.");
+                }
+            }
+
+            // Mostrar feedback de sucesso ao copiar
+            function showCopySuccess() {
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> COPIADO';
+                copyBtn.style.backgroundColor = "#4CAF50";
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> COPIAR CÓDIGO PIX';
+                    copyBtn.style.backgroundColor = "#00a859";
+                }, 2000);
+            }
+
+            // Event listener para botão de cópia
+            if (copyBtn) {
+                copyBtn.addEventListener("click", copyPixCode);
+            }
+        });
+    </script>
+</body>
+</html>

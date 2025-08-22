@@ -1,0 +1,1 @@
+No Content: https://caminhosolidario.online/pagamento/js/config.js
